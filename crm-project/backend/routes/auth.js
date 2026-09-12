@@ -65,7 +65,14 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ error: "Password must be at least 8 characters" });
   }
 
-  const client = await pool.connect();
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (err) {
+    console.error("Database connection failed:", err);
+    return res.status(503).json({ error: "Could not reach the database. Please try again." });
+  }
+
   try {
     await client.query("BEGIN");
 
@@ -149,7 +156,14 @@ router.post("/google", async (req, res) => {
     return res.status(500).json({ error: "Google sign-in is not configured on this server" });
   }
 
-  const client = await pool.connect();
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (err) {
+    console.error("Database connection failed:", err);
+    return res.status(503).json({ error: "Could not reach the database. Please try again." });
+  }
+
   try {
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
@@ -233,7 +247,14 @@ router.post("/resend-verification", async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
-  const client = await pool.connect();
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (err) {
+    console.error("Database connection failed:", err);
+    return res.status(503).json({ error: "Could not reach the database. Please try again." });
+  }
+
   try {
     const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
     const user = result.rows[0];

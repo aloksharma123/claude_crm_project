@@ -37,3 +37,9 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`CRM API listening on port ${port}`));
+
+// A safety net: an unhandled async error anywhere should never take the
+// whole server down. Log it and keep serving other requests.
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err);
+});

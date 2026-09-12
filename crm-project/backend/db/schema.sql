@@ -1,0 +1,75 @@
+-- CRM schema. Multi-tenant via organization_id on every business table,
+-- so one deployment can serve many companies with isolated data.
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE organizations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'member', -- 'admin' | 'member'
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE companies (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  website TEXT,
+  industry TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE contacts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
+  first_name TEXT NOT NULL,
+  last_name TEXT,
+  email TEXT,
+  phone TEXT,
+  title TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE deals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  contact_id UUID REFERENCES contacts(id) ON DELETE SET NULL,
+  company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  value_cents BIGINT NOT NULL DEFAULT 0,
+  stage TEXT NOT NULL DEFAULT 'new', -- new, contacted, qualified, proposal, won, lost
+  owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE activities (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  contact_id UUID REFERENCES contacts(id) ON DELETE CASCADE,
+  deal_id UUID REFERENCES deals(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  type TEXT NOT NULL DEFAULT 'note', -- note, call, email, task
+  body TEXT NOT NULL,
+  due_at TIMESTAMPTZ,
+  completed BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_contacts_org ON contacts(organization_id);
+CREATE INDEX idx_companies_org ON companies(organization_id);
+CREATE INDEX idx_deals_org ON deals(organization_id);
+CREATE INDEX idx_deals_stage ON deals(organization_id, stage);
+CREATE INDEX idx_activities_org ON activities(organization_id);
+CREATE INDEX idx_activities_contact ON activities(contact_id);
+CREATE INDEX idx_activities_deal ON activities(deal_id);

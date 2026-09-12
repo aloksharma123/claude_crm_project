@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api";
+import { api, getSessionUser } from "../api";
 
 function formatMoney(cents) {
   return (cents / 100).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -7,15 +7,40 @@ function formatMoney(cents) {
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [resendStatus, setResendStatus] = useState("idle"); // idle | sending | sent
+  const user = getSessionUser();
 
   useEffect(() => {
     api.dashboard().then(setData).catch(console.error);
   }, []);
 
+  async function handleResend() {
+    setResendStatus("sending");
+    try {
+      await api.resendVerification(user.email);
+      setResendStatus("sent");
+    } catch {
+      setResendStatus("idle");
+    }
+  }
+
   if (!data) return <div className="loading-text">Loading…</div>;
 
   return (
     <>
+      {user && !user.emailVerified && (
+        <div className="error-banner" style={{ background: "#faf3df", borderColor: "var(--gold)", color: "var(--ink)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>Please verify your email to secure your account.</span>
+          {resendStatus === "sent" ? (
+            <span style={{ fontWeight: 600 }}>Sent — check your inbox</span>
+          ) : (
+            <button className="btn btn-secondary" onClick={handleResend} disabled={resendStatus === "sending"}>
+              {resendStatus === "sending" ? "Sending…" : "Resend email"}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="page-header">
         <div>
           <h1>Dashboard</h1>

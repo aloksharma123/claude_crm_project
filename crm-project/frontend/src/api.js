@@ -22,6 +22,9 @@ async function request(path, options = {}) {
 export const api = {
   signup: (body) => request("/api/auth/signup", { method: "POST", body: JSON.stringify(body) }),
   login: (body) => request("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
+  googleLogin: (credential) => request("/api/auth/google", { method: "POST", body: JSON.stringify({ credential }) }),
+  verifyEmail: (token) => request("/api/auth/verify-email", { method: "POST", body: JSON.stringify({ token }) }),
+  resendVerification: (email) => request("/api/auth/resend-verification", { method: "POST", body: JSON.stringify({ email }) }),
 
   dashboard: () => request("/api/dashboard"),
 

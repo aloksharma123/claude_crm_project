@@ -3,6 +3,7 @@ import { isAuthenticated } from "./api";
 import Sidebar from "./components/Sidebar.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
+import VerifyEmail from "./pages/VerifyEmail.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Contacts from "./pages/Contacts.jsx";
 import ContactDetail from "./pages/ContactDetail.jsx";
@@ -24,6 +25,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
       <Route path="/deals" element={<ProtectedLayout><Deals /></ProtectedLayout>} />
       <Route path="/contacts" element={<ProtectedLayout><Contacts /></ProtectedLayout>} />

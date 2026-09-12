@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, saveSession } from "../api";
+import GoogleButton from "../components/GoogleButton.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -49,6 +50,8 @@ export default function Login() {
         <div className="auth-switch">
           New here? <Link to="/signup">Create a workspace</Link>
         </div>
+
+        <GoogleButton onError={setError} />
       </div>
     </div>
   );

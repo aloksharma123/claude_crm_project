@@ -83,3 +83,58 @@ CREATE INDEX idx_deals_stage ON deals(organization_id, stage);
 CREATE INDEX idx_activities_org ON activities(organization_id);
 CREATE INDEX idx_activities_contact ON activities(contact_id);
 CREATE INDEX idx_activities_deal ON activities(deal_id);
+
+ALTER TABLE deals ADD COLUMN expected_close_date DATE;
+
+CREATE TABLE leads (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  first_name TEXT NOT NULL,
+  last_name TEXT,
+  company_name TEXT,
+  email TEXT,
+  phone TEXT,
+  source TEXT,
+  status TEXT NOT NULL DEFAULT 'new',
+  owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  converted_contact_id UUID,
+  converted_deal_id UUID,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE products (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  sku TEXT,
+  price_cents BIGINT NOT NULL DEFAULT 0,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE deal_products (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  deal_id UUID NOT NULL REFERENCES deals(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  unit_price_cents BIGINT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE cases (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  contact_id UUID REFERENCES contacts(id) ON DELETE SET NULL,
+  subject TEXT NOT NULL,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'open',
+  priority TEXT NOT NULL DEFAULT 'medium',
+  owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_leads_org ON leads(organization_id);
+CREATE INDEX idx_products_org ON products(organization_id);
+CREATE INDEX idx_deal_products_deal ON deal_products(deal_id);
+CREATE INDEX idx_cases_org ON cases(organization_id);

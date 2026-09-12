@@ -8,6 +8,10 @@ const contactRoutes = require("./routes/contacts");
 const dealRoutes = require("./routes/deals");
 const activityRoutes = require("./routes/activities");
 const dashboardRoutes = require("./routes/dashboard");
+const leadRoutes = require("./routes/leads");
+const productRoutes = require("./routes/products");
+const caseRoutes = require("./routes/cases");
+const forecastRoutes = require("./routes/forecast");
 
 const app = express();
 app.use(cors());
@@ -21,6 +25,10 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/deals", dealRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/leads", leadRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/cases", caseRoutes);
+app.use("/api/forecast", forecastRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

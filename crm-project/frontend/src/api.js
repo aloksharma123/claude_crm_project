@@ -45,6 +45,21 @@ export const api = {
 
   createActivity: (body) => request("/api/activities", { method: "POST", body: JSON.stringify(body) }),
   completeActivity: (id) => request(`/api/activities/${id}/complete`, { method: "PUT" }),
+
+  listLeads: () => request("/api/leads"),
+  createLead: (body) => request("/api/leads", { method: "POST", body: JSON.stringify(body) }),
+  convertLead: (id, body) => request(`/api/leads/${id}/convert`, { method: "POST", body: JSON.stringify(body || {}) }),
+  deleteLead: (id) => request(`/api/leads/${id}`, { method: "DELETE" }),
+
+  listProducts: () => request("/api/products"),
+  createProduct: (body) => request("/api/products", { method: "POST", body: JSON.stringify(body) }),
+  deleteProduct: (id) => request(`/api/products/${id}`, { method: "DELETE" }),
+
+  listCases: () => request("/api/cases"),
+  createCase: (body) => request("/api/cases", { method: "POST", body: JSON.stringify(body) }),
+  updateCaseStatus: (id, status) => request(`/api/cases/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
+
+  getForecast: () => request("/api/forecast"),
 };
 
 export function saveSession(token, user) {

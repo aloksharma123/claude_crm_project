@@ -9,6 +9,10 @@ import Contacts from "./pages/Contacts.jsx";
 import ContactDetail from "./pages/ContactDetail.jsx";
 import Companies from "./pages/Companies.jsx";
 import Deals from "./pages/Deals.jsx";
+import Leads from "./pages/Leads.jsx";
+import Products from "./pages/Products.jsx";
+import Cases from "./pages/Cases.jsx";
+import Forecast from "./pages/Forecast.jsx";
 
 function ProtectedLayout({ children }) {
   if (!isAuthenticated()) return <Navigate to="/login" replace />;
@@ -31,6 +35,10 @@ export default function App() {
       <Route path="/contacts" element={<ProtectedLayout><Contacts /></ProtectedLayout>} />
       <Route path="/contacts/:id" element={<ProtectedLayout><ContactDetail /></ProtectedLayout>} />
       <Route path="/companies" element={<ProtectedLayout><Companies /></ProtectedLayout>} />
+      <Route path="/leads" element={<ProtectedLayout><Leads /></ProtectedLayout>} />
+      <Route path="/products" element={<ProtectedLayout><Products /></ProtectedLayout>} />
+      <Route path="/cases" element={<ProtectedLayout><Cases /></ProtectedLayout>} />
+      <Route path="/forecast" element={<ProtectedLayout><Forecast /></ProtectedLayout>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

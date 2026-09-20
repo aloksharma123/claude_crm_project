@@ -60,6 +60,18 @@ export const api = {
   updateCaseStatus: (id, status) => request(`/api/cases/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
 
   getForecast: () => request("/api/forecast"),
+
+  listTeam: () => request("/api/team"),
+  inviteTeammate: (body) => request("/api/team/invite", { method: "POST", body: JSON.stringify(body) }),
+  acceptInvite: (body) => request("/api/team/accept-invite", { method: "POST", body: JSON.stringify(body) }),
+  removeTeammate: (id) => request(`/api/team/${id}`, { method: "DELETE" }),
+
+  getBillingStatus: () => request("/api/billing/status"),
+  createBillingOrder: (seats) => request("/api/billing/create-order", { method: "POST", body: JSON.stringify({ seats }) }),
+  verifyPayment: (body) => request("/api/billing/verify-payment", { method: "POST", body: JSON.stringify(body) }),
+
+  getReportOptions: () => request("/api/reports/options"),
+  runReport: (source, groupBy, metric) => request(`/api/reports/run?source=${source}&groupBy=${groupBy}&metric=${metric}`),
 };
 
 export function saveSession(token, user) {

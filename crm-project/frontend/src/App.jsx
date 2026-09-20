@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
+import AcceptInvite from "./pages/AcceptInvite.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Contacts from "./pages/Contacts.jsx";
 import ContactDetail from "./pages/ContactDetail.jsx";
@@ -13,6 +14,9 @@ import Leads from "./pages/Leads.jsx";
 import Products from "./pages/Products.jsx";
 import Cases from "./pages/Cases.jsx";
 import Forecast from "./pages/Forecast.jsx";
+import Team from "./pages/Team.jsx";
+import Billing from "./pages/Billing.jsx";
+import Reports from "./pages/Reports.jsx";
 
 function ProtectedLayout({ children }) {
   if (!isAuthenticated()) return <Navigate to="/login" replace />;
@@ -30,6 +34,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/accept-invite" element={<AcceptInvite />} />
       <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
       <Route path="/deals" element={<ProtectedLayout><Deals /></ProtectedLayout>} />
       <Route path="/contacts" element={<ProtectedLayout><Contacts /></ProtectedLayout>} />
@@ -39,6 +44,9 @@ export default function App() {
       <Route path="/products" element={<ProtectedLayout><Products /></ProtectedLayout>} />
       <Route path="/cases" element={<ProtectedLayout><Cases /></ProtectedLayout>} />
       <Route path="/forecast" element={<ProtectedLayout><Forecast /></ProtectedLayout>} />
+      <Route path="/reports" element={<ProtectedLayout><Reports /></ProtectedLayout>} />
+      <Route path="/team" element={<ProtectedLayout><Team /></ProtectedLayout>} />
+      <Route path="/billing" element={<ProtectedLayout><Billing /></ProtectedLayout>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

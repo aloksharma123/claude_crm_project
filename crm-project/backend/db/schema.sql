@@ -6,6 +6,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE organizations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
+  plan_seats INTEGER NOT NULL DEFAULT 1,
+  plan_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -13,11 +15,13 @@ CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
-  password_hash TEXT, -- null for accounts created via Google sign-in
+  password_hash TEXT, -- null for accounts created via Google sign-in, or a pending invite
   full_name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'member', -- 'admin' | 'member'
   email_verified BOOLEAN NOT NULL DEFAULT false,
   google_id TEXT UNIQUE,
+  invite_token TEXT UNIQUE,
+  invite_accepted BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -138,3 +142,16 @@ CREATE INDEX idx_leads_org ON leads(organization_id);
 CREATE INDEX idx_products_org ON products(organization_id);
 CREATE INDEX idx_deal_products_deal ON deal_products(deal_id);
 CREATE INDEX idx_cases_org ON cases(organization_id);
+
+CREATE TABLE billing_orders (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  razorpay_order_id TEXT NOT NULL UNIQUE,
+  razorpay_payment_id TEXT,
+  seats INTEGER NOT NULL,
+  amount_paise BIGINT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'created',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_billing_orders_org ON billing_orders(organization_id);

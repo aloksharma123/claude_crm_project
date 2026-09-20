@@ -22,6 +22,9 @@ export default function Sidebar() {
         <NavLink to="/products">Products</NavLink>
         <NavLink to="/cases">Cases</NavLink>
         <NavLink to="/forecast">Forecast</NavLink>
+        <NavLink to="/reports">Reports</NavLink>
+        <NavLink to="/team">Team</NavLink>
+        {user?.role === "admin" && <NavLink to="/billing">Billing</NavLink>}
       </nav>
       <div className="sidebar-footer">
         {user?.fullName}

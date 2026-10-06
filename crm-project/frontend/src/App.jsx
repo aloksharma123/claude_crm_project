@@ -1,53 +1,9 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { isAuthenticated } from "./api";
+import React,{useEffect,useState} from "react";
+import {Routes,Route,Navigate,useLocation} from "react-router-dom";
+import {isAuthenticated,api} from "./api";
 import Sidebar from "./components/Sidebar.jsx";
-import Login from "./pages/Login.jsx";
-import Signup from "./pages/Signup.jsx";
-import VerifyEmail from "./pages/VerifyEmail.jsx";
-import AcceptInvite from "./pages/AcceptInvite.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import Contacts from "./pages/Contacts.jsx";
-import ContactDetail from "./pages/ContactDetail.jsx";
-import Companies from "./pages/Companies.jsx";
-import Deals from "./pages/Deals.jsx";
-import Leads from "./pages/Leads.jsx";
-import Products from "./pages/Products.jsx";
-import Cases from "./pages/Cases.jsx";
-import Forecast from "./pages/Forecast.jsx";
-import Team from "./pages/Team.jsx";
-import Billing from "./pages/Billing.jsx";
-import Reports from "./pages/Reports.jsx";
-
-function ProtectedLayout({ children }) {
-  if (!isAuthenticated()) return <Navigate to="/login" replace />;
-  return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="main-content">{children}</main>
-    </div>
-  );
-}
-
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/accept-invite" element={<AcceptInvite />} />
-      <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
-      <Route path="/deals" element={<ProtectedLayout><Deals /></ProtectedLayout>} />
-      <Route path="/contacts" element={<ProtectedLayout><Contacts /></ProtectedLayout>} />
-      <Route path="/contacts/:id" element={<ProtectedLayout><ContactDetail /></ProtectedLayout>} />
-      <Route path="/companies" element={<ProtectedLayout><Companies /></ProtectedLayout>} />
-      <Route path="/leads" element={<ProtectedLayout><Leads /></ProtectedLayout>} />
-      <Route path="/products" element={<ProtectedLayout><Products /></ProtectedLayout>} />
-      <Route path="/cases" element={<ProtectedLayout><Cases /></ProtectedLayout>} />
-      <Route path="/forecast" element={<ProtectedLayout><Forecast /></ProtectedLayout>} />
-      <Route path="/reports" element={<ProtectedLayout><Reports /></ProtectedLayout>} />
-      <Route path="/team" element={<ProtectedLayout><Team /></ProtectedLayout>} />
-      <Route path="/billing" element={<ProtectedLayout><Billing /></ProtectedLayout>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
+import Login from "./pages/Login.jsx";import Signup from "./pages/Signup.jsx";import VerifyEmail from "./pages/VerifyEmail.jsx";import AcceptInvite from "./pages/AcceptInvite.jsx";
+import Dashboard from "./pages/Dashboard.jsx";import Contacts from "./pages/Contacts.jsx";import ContactDetail from "./pages/ContactDetail.jsx";import Companies from "./pages/Companies.jsx";import Deals from "./pages/Deals.jsx";import Leads from "./pages/Leads.jsx";import Products from "./pages/Products.jsx";import Cases from "./pages/Cases.jsx";import Forecast from "./pages/Forecast.jsx";import Team from "./pages/Team.jsx";import Billing from "./pages/Billing.jsx";import Reports from "./pages/Reports.jsx";
+function Search(){const l=useLocation(),q=new URLSearchParams(l.search).get("q")||"";const [d,setD]=useState(null);useEffect(()=>{api.search(q).then(setD).catch(()=>setD(null))},[q]);if(!d)return <div className="loading-text">Searching…</div>;return <><div className="page-header"><div><div className="eyebrow">GLOBAL SEARCH</div><h1>Results for “{q}”</h1></div></div>{["contacts","companies","leads","deals"].map(k=><section className="panel search-section" key={k}><h3>{k[0].toUpperCase()+k.slice(1)}</h3>{d[k].length===0?<div className="page-subtitle">No matches</div>:d[k].map(x=><div className="search-result" key={x.id}><strong>{x.name||x.title||[x.first_name,x.last_name].filter(Boolean).join(" ")}</strong><span>{x.company_name||x.email||x.stage||x.status||x.industry||""}</span></div>)}</section>)}</>}
+function Protected({children}){if(!isAuthenticated())return <Navigate to="/login" replace/>;return <div className="app-shell"><Sidebar/><main className="main-content">{children}</main></div>}
+export default function App(){return <Routes><Route path="/login" element={<Login/>}/><Route path="/signup" element={<Signup/>}/><Route path="/verify-email" element={<VerifyEmail/>}/><Route path="/accept-invite" element={<AcceptInvite/>}/><Route path="/" element={<Protected><Dashboard/></Protected>}/><Route path="/search" element={<Protected><Search/></Protected>}/><Route path="/deals" element={<Protected><Deals/></Protected>}/><Route path="/contacts" element={<Protected><Contacts/></Protected>}/><Route path="/contacts/:id" element={<Protected><ContactDetail/></Protected>}/><Route path="/companies" element={<Protected><Companies/></Protected>}/><Route path="/leads" element={<Protected><Leads/></Protected>}/><Route path="/products" element={<Protected><Products/></Protected>}/><Route path="/cases" element={<Protected><Cases/></Protected>}/><Route path="/forecast" element={<Protected><Forecast/></Protected>}/><Route path="/reports" element={<Protected><Reports/></Protected>}/><Route path="/team" element={<Protected><Team/></Protected>}/><Route path="/billing" element={<Protected><Billing/></Protected>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>}

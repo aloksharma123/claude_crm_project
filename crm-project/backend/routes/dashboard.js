@@ -1,42 +1,19 @@
-const express = require("express");
-const pool = require("../db/pool");
-const { requireAuth } = require("../middleware/auth");
-
-const router = express.Router();
-router.use(requireAuth);
-
-router.get("/", async (req, res) => {
-  const orgId = req.user.organizationId;
-
-  const [contacts, companies, openDeals, wonDeals, upcomingTasks] = await Promise.all([
-    pool.query("SELECT COUNT(*) FROM contacts WHERE organization_id = $1", [orgId]),
-    pool.query("SELECT COUNT(*) FROM companies WHERE organization_id = $1", [orgId]),
-    pool.query(
-      "SELECT COUNT(*), COALESCE(SUM(value_cents), 0) AS total_value FROM deals WHERE organization_id = $1 AND stage NOT IN ('won', 'lost')",
-      [orgId]
-    ),
-    pool.query(
-      "SELECT COUNT(*), COALESCE(SUM(value_cents), 0) AS total_value FROM deals WHERE organization_id = $1 AND stage = 'won'",
-      [orgId]
-    ),
-    pool.query(
-      `SELECT a.*, c.first_name, c.last_name FROM activities a
-       LEFT JOIN contacts c ON c.id = a.contact_id
-       WHERE a.organization_id = $1 AND a.type = 'task' AND a.completed = false
-       ORDER BY a.due_at ASC NULLS LAST LIMIT 5`,
-      [orgId]
-    ),
-  ]);
-
-  res.json({
-    contactCount: Number(contacts.rows[0].count),
-    companyCount: Number(companies.rows[0].count),
-    openDealCount: Number(openDeals.rows[0].count),
-    openPipelineValueCents: Number(openDeals.rows[0].total_value),
-    wonDealCount: Number(wonDeals.rows[0].count),
-    wonValueCents: Number(wonDeals.rows[0].total_value),
-    upcomingTasks: upcomingTasks.rows,
-  });
+const express=require("express");
+const pool=require("../db/pool");
+const {requireAuth}=require("../middleware/auth");
+const router=express.Router(); router.use(requireAuth);
+router.get("/",async(req,res)=>{
+ const o=req.user.organizationId;
+ const [contacts,companies,openDeals,wonDeals,leads,cases,tasks,recent]=await Promise.all([
+  pool.query("SELECT COUNT(*) FROM contacts WHERE organization_id=$1",[o]),
+  pool.query("SELECT COUNT(*) FROM companies WHERE organization_id=$1",[o]),
+  pool.query("SELECT COUNT(*),COALESCE(SUM(value_cents),0) total_value FROM deals WHERE organization_id=$1 AND stage NOT IN ('won','lost')",[o]),
+  pool.query("SELECT COUNT(*),COALESCE(SUM(value_cents),0) total_value FROM deals WHERE organization_id=$1 AND stage='won'",[o]),
+  pool.query("SELECT COUNT(*) FROM leads WHERE organization_id=$1 AND status<>'converted'",[o]),
+  pool.query("SELECT COUNT(*) FROM cases WHERE organization_id=$1 AND status NOT IN ('closed','resolved')",[o]),
+  pool.query("SELECT COUNT(*) FROM activities WHERE organization_id=$1 AND type='task' AND completed=false",[o]),
+  pool.query("SELECT id,type,body,due_at,created_at FROM activities WHERE organization_id=$1 ORDER BY created_at DESC LIMIT 8",[o])
+ ]);
+ res.json({contactCount:+contacts.rows[0].count,companyCount:+companies.rows[0].count,openDealCount:+openDeals.rows[0].count,openPipelineValueCents:+openDeals.rows[0].total_value,wonDealCount:+wonDeals.rows[0].count,wonValueCents:+wonDeals.rows[0].total_value,openLeadCount:+leads.rows[0].count,openCaseCount:+cases.rows[0].count,openTaskCount:+tasks.rows[0].count,recentActivities:recent.rows});
 });
-
-module.exports = router;
+module.exports=router;

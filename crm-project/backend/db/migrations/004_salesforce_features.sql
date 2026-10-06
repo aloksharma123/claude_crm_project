@@ -1,0 +1,16 @@
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS billing_city TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS billing_country TEXT;
+ALTER TABLE contacts ADD COLUMN IF NOT EXISTS mobile_phone TEXT;
+ALTER TABLE contacts ADD COLUMN IF NOT EXISTS department TEXT;
+ALTER TABLE contacts ADD COLUMN IF NOT EXISTS lifecycle_stage TEXT NOT NULL DEFAULT 'prospect';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS rating TEXT NOT NULL DEFAULT 'warm';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS website TEXT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS probability INTEGER NOT NULL DEFAULT 20;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS next_step TEXT;
+CREATE TABLE IF NOT EXISTS audit_logs (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,user_id UUID REFERENCES users(id) ON DELETE SET NULL,entity_type TEXT NOT NULL,entity_id UUID,action TEXT NOT NULL,details JSONB NOT NULL DEFAULT '{}'::jsonb,created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS idx_audit_logs_org_time ON audit_logs(organization_id,created_at DESC);
+CREATE TABLE IF NOT EXISTS saved_views (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,name TEXT NOT NULL,object_type TEXT NOT NULL,filters JSONB NOT NULL DEFAULT '{}'::jsonb,columns JSONB NOT NULL DEFAULT '[]'::jsonb,created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS idx_saved_views_user ON saved_views(organization_id,user_id,object_type);

@@ -1,84 +1,23 @@
-import { useEffect, useState } from "react";
-import { api, getSessionUser } from "../api";
-
-function formatMoney(cents) {
-  return (cents / 100).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-}
-
-export default function Dashboard() {
-  const [data, setData] = useState(null);
-  const [resendStatus, setResendStatus] = useState("idle"); // idle | sending | sent
-  const user = getSessionUser();
-
-  useEffect(() => {
-    api.dashboard().then(setData).catch(console.error);
-  }, []);
-
-  async function handleResend() {
-    setResendStatus("sending");
-    try {
-      await api.resendVerification(user.email);
-      setResendStatus("sent");
-    } catch {
-      setResendStatus("idle");
-    }
-  }
-
-  if (!data) return <div className="loading-text">Loading…</div>;
-
-  return (
-    <>
-      {user && !user.emailVerified && (
-        <div className="error-banner" style={{ background: "#faf3df", borderColor: "var(--gold)", color: "var(--ink)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span>Please verify your email to secure your account.</span>
-          {resendStatus === "sent" ? (
-            <span style={{ fontWeight: 600 }}>Sent — check your inbox</span>
-          ) : (
-            <button className="btn btn-secondary" onClick={handleResend} disabled={resendStatus === "sending"}>
-              {resendStatus === "sending" ? "Sending…" : "Resend email"}
-            </button>
-          )}
-        </div>
-      )}
-
-      <div className="page-header">
-        <div>
-          <h1>Dashboard</h1>
-          <div className="page-subtitle">A snapshot of where things stand</div>
-        </div>
-      </div>
-
-      <div className="stat-grid">
-        <div className="stat-card">
-          <div className="stat-value">{data.openDealCount}</div>
-          <div className="stat-label">Open deals</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{formatMoney(data.openPipelineValueCents)}</div>
-          <div className="stat-label">Open pipeline value</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{formatMoney(data.wonValueCents)}</div>
-          <div className="stat-label">Won ({data.wonDealCount})</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{data.contactCount}</div>
-          <div className="stat-label">Contacts across {data.companyCount} companies</div>
-        </div>
-      </div>
-
-      <div className="panel">
-        <h3>Upcoming tasks</h3>
-        {data.upcomingTasks.length === 0 && <div className="page-subtitle">No open tasks. Nice and clear.</div>}
-        {data.upcomingTasks.map((t) => (
-          <div className="task-row" key={t.id}>
-            <span>
-              {t.body} {t.first_name && <span className="page-subtitle">— {t.first_name} {t.last_name}</span>}
-            </span>
-            <span className="page-subtitle">{t.due_at ? new Date(t.due_at).toLocaleDateString() : "No due date"}</span>
-          </div>
-        ))}
-      </div>
-    </>
-  );
+import {useEffect,useState} from "react";
+import {api,getSessionUser} from "../api";
+function money(c){return (Number(c||0)/100).toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:0})}
+export default function Dashboard(){
+ const [data,setData]=useState(null),[q,setQ]=useState(""),[activities,setActivities]=useState([]);
+ const user=getSessionUser();
+ useEffect(()=>{api.dashboard().then(setData).catch(console.error);api.listActivities().then(setActivities).catch(console.error)},[]);
+ if(!data)return <div className="loading-text">Loading workspace…</div>;
+ const cards=[
+  ["Pipeline",money(data.openPipelineValueCents),data.openDealCount+" open opportunities","↗"],
+  ["Won revenue",money(data.wonValueCents),data.wonDealCount+" closed won","✓"],
+  ["Open leads",data.openLeadCount,"Leads requiring attention","◉"],
+  ["Open cases",data.openCaseCount,"Customer cases","◇"]
+ ];
+ return <div className="dashboard-page">
+  <div className="page-header"><div><div className="eyebrow">OVERVIEW</div><h1>Good to see you, {user?.fullName?.split(" ")[0]||"there"}</h1><div className="page-subtitle">Here’s what’s happening across your sales workspace.</div></div><div className="header-actions"><button className="btn btn-secondary" onClick={()=>window.location.reload()}>↻ Refresh</button><button className="btn btn-primary" onClick={()=>window.location.href="/deals"}>＋ New opportunity</button></div></div>
+  <div className="stat-grid">{cards.map(([label,value,sub,icon])=><div className="stat-card enhanced" key={label}><div className="stat-top"><span className="stat-label">{label}</span><span className="stat-icon">{icon}</span></div><div className="stat-value">{value}</div><div className="stat-label">{sub}</div></div>)}</div>
+  <div className="dashboard-grid">
+   <section className="panel"><div className="panel-header"><div><h3>My work queue</h3><span className="page-subtitle">Recent CRM activity</span></div><a href="/reports">View reports →</a></div>{activities.length===0?<div className="empty-state">No activity yet. Add a task, call, note, or email from a record.</div>:activities.slice(0,7).map(a=><div className="activity-row" key={a.id}><span className="activity-dot">{a.type==="task"?"✓":a.type==="call"?"☎":a.type==="email"?"✉":"•"}</span><div><strong>{a.body}</strong><div className="page-subtitle">{a.type} · {new Date(a.created_at).toLocaleString()}</div></div>{a.type==="task"&&!a.completed&&<button className="btn btn-secondary small" onClick={async()=>{await api.completeActivity(a.id);setActivities(x=>x.map(v=>v.id===a.id?{...v,completed:true}:v))}}>Complete</button>}</div>)}</section>
+   <section className="panel"><div className="panel-header"><div><h3>Sales snapshot</h3><span className="page-subtitle">Key relationship counts</span></div></div><div className="mini-stat"><span>Contacts</span><strong>{data.contactCount}</strong></div><div className="mini-stat"><span>Accounts</span><strong>{data.companyCount}</strong></div><div className="mini-stat"><span>Open tasks</span><strong>{data.openTaskCount}</strong></div><div className="mini-stat"><span>Won pipeline</span><strong>{money(data.wonValueCents)}</strong></div></section>
+  </div>
+ </div>
 }
